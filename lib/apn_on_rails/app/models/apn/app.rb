@@ -23,7 +23,28 @@ class APN::App < APN::Base
       raise APN::Errors::MissingCertificateError.new
       return
     end
-    APN::App.send_notifications_for_cert(self.cert, self.id)
+     nb_notifs = APN::Notification.count(:conditions => 'sent_at is NULL')   
+      puts "#{nb_notifs.to_s} notifs to be send"  
+      nb_cur_notif = 0
+      if APN::Notification.count(:conditions => 'sent_at is NULL') > 0
+        APN::Notification.find_in_batches(:conditions => 'sent_at is NULL', :batch_size => 300) do |notifs|
+          APN::Connection.open_for_delivery({:cert => self.cert}) do |conn, sock|
+            notifs.each do |noty|
+              nb_cur_notif += 1                   
+              begin  
+                conn.write(noty.message_for_sending)   
+              rescue Exception => e
+                puts "Exception raised :"
+                puts "==> Device : #{noty.inspect}"
+                puts "==> Exception : #{e.to_s}"
+              end
+              noty.sent_at = Time.now
+              noty.save
+              puts "#{nb_cur_notif}/#{nb_notifs}"
+            end    
+          end
+        end
+      end
   end
   
   def self.send_notifications
@@ -35,6 +56,17 @@ class APN::App < APN::Base
       global_cert = File.read(configatron.apn.cert)
       send_notifications_for_cert(global_cert, nil)
     end
+  end
+  
+  #Added method to test certifications
+  def test_cert!        
+    puts "test_cert"    
+    if self.cert.nil?                                            
+      puts "no certif"
+      raise APN::Errors::MissingCertificateError.new
+      return false
+    end   
+    return true                 
   end
   
   def self.send_notifications_for_cert(the_cert, app_id)
@@ -59,38 +91,24 @@ class APN::App < APN::Base
       end
     # end   
   end
-  
-  def send_group_notifications
-    if self.cert.nil? 
-      raise APN::Errors::MissingCertificateError.new
-      return
-    end
-    unless self.unsent_group_notifications.nil? || self.unsent_group_notifications.empty? 
+
+  #modified to use test_cert
+  def send_group_notifications   
+    return if !self.test_cert!
+    unless self.unsent_group_notifications.nil? or self.unsent_group_notifications.empty? 
       APN::Connection.open_for_delivery({:cert => self.cert}) do |conn, sock|
         unsent_group_notifications.each do |gnoty|
-          gnoty.devices.find_each do |device|
-            conn.write(gnoty.message_for_sending(device))
-          end
-          gnoty.sent_at = Time.now
-          gnoty.save
+          self.send_gnoty(gnoty, conn)
         end
       end
     end
   end
   
-  def send_group_notification(gnoty)
-    if self.cert.nil? 
-      raise APN::Errors::MissingCertificateError.new
-      return
-    end
+  #Modfiied method to restart sending from a specific device
+  def send_group_notification(gnoty, from_device_id = nil)  
+    return if !self.test_cert!      
     unless gnoty.nil?
-      APN::Connection.open_for_delivery({:cert => self.cert}) do |conn, sock|
-        gnoty.devices.find_each do |device|
-          conn.write(gnoty.message_for_sending(device))
-        end
-        gnoty.sent_at = Time.now
-        gnoty.save
-      end
+      self.send_gnoty(gnoty, nil, from_device_id)   
     end
   end
   
@@ -100,6 +118,44 @@ class APN::App < APN::Base
       app.send_group_notifications
     end
   end          
+  
+  #new send notification handles bad devices
+  def send_gnoty(gnoty, connection, from_id = nil)
+    puts "#{gnoty.devices.size} device(s) to notify"
+    nb_cur_device = 0  
+    bad_devices = []  
+    if from_id
+      @retry_from_device_id = from_id.to_i
+      puts "==> Resuming from id # " + from_id.to_s
+    end
+    begin
+      APN::Connection.open_for_delivery({:cert => self.cert}) do |conn, sock|
+        devices = @retry_from_device_id.blank? ? gnoty.devices : gnoty.devices.collect{ |d| (d.id > @retry_from_device_id) ? d : nil}.uniq!
+        #puts devices.inspect
+        devices.each do |device|
+          next if device.blank?
+          @current_device = device
+          puts "#{nb_cur_device += 1}/#{gnoty.devices.size}"            
+          conn.write(gnoty.message_for_sending(device))
+        end
+      end
+    rescue Exception => e
+      puts "Exception raised :"
+      puts "==> Device : #{@current_device.id}"
+      puts "==> Exception : #{e.to_s} (error log saved in back)" 
+      #specific to blindtest error reproting
+      Error.create(:user_id => 3, :backtrace => "#{e.to_s} \n\n Device : #{@current_device.inspect} \n\n #{e.backtrace.join("\n").to_s}", :type => e.class.to_s, :url => "IphonePush/send_group_notifications")
+      @retry_from_device_id = @current_device.id
+      bad_devices << @current_device.id
+      retry
+    end
+    puts "==> Bad devices : " + bad_devices.inspect
+
+
+    gnoty.sent_at = Time.now
+    gnoty.save                                                                     
+    puts "Notification sent to #{nb_cur_device}/#{gnoty.devices.size} device(s)"
+  end
   
   # Retrieves a list of APN::Device instnces from Apple using
   # the <tt>devices</tt> method. It then checks to see if the
