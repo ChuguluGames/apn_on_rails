@@ -144,7 +144,7 @@ class APN::App < APN::Base
       puts "==> Device : #{@current_device.id}"
       puts "==> Exception : #{e.to_s} (error log saved in back)" 
       #specific to blindtest error reproting
-      Error.create(:user_id => 3, :backtrace => "#{e.to_s} \n\n Device : #{@current_device.inspect} \n\n #{e.backtrace.join("\n").to_s}", :type => e.class.to_s, :url => "IphonePush/send_group_notifications")
+      # Error.create(:user_id => 3, :backtrace => "#{e.to_s} \n\n Device : #{@current_device.inspect} \n\n #{e.backtrace.join("\n").to_s}", :type => e.class.to_s, :url => "IphonePush/send_group_notifications")
       @retry_from_device_id = @current_device.id
       bad_devices << @current_device.id
       retry
