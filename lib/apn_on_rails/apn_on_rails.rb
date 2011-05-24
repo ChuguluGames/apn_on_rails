@@ -4,12 +4,12 @@ require 'configatron'
 
 rails_root = File.join(FileUtils.pwd, 'rails_root')
 if defined?(RAILS_ROOT)
-  rails_root = RAILS_ROOT
+  rails_root = Rails.root
 end
 
 rails_env = 'development'
 if defined?(RAILS_ENV)
-  rails_env = RAILS_ENV
+  rails_env = Rails.env
 end
 
 configatron.apn.set_default(:passphrase, '')
@@ -26,7 +26,7 @@ if rails_env == 'production'
   configatron.apn.feedback.set_default(:cert, configatron.apn.cert)
 else
   configatron.apn.set_default(:host, 'gateway.sandbox.push.apple.com')
-  configatron.apn.set_default(:cert, File.join(rails_root, 'config', 'apple_push_notification_development.pem'))
+  configatron.apn.set_default(:cert, File.join(rails_root.to_s, 'config', 'apple_push_notification_development.pem'))
   
   configatron.apn.feedback.set_default(:host, 'feedback.sandbox.push.apple.com')
   configatron.apn.feedback.set_default(:cert, configatron.apn.cert)
