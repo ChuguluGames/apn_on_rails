@@ -1,5 +1,4 @@
 class APN::Group < APN::Base
-  acts_as_website_item  
   belongs_to :app, :class_name => 'APN::App'
   has_many   :device_groupings, :class_name => "APN::DeviceGrouping", :dependent => :destroy
   has_many   :devices, :class_name => 'APN::Device', :through => :device_groupings
