@@ -131,7 +131,6 @@ class APN::App < APN::Base
     begin
       APN::Connection.open_for_delivery({:cert => self.cert}) do |conn, sock|
         devices = @retry_from_device_id.blank? ? gnoty.devices : gnoty.devices.collect{ |d| (d.id > @retry_from_device_id) ? d : nil}.uniq!
-        #puts devices.inspect
         devices.each do |device|
           next if device.blank?
           @current_device = device
@@ -142,10 +141,12 @@ class APN::App < APN::Base
     rescue Exception => e
       puts "Exception raised :"
       puts "==> Device : #{@current_device.id}"
-      puts "==> Exception : #{e.to_s} (error log saved in back)" 
+      puts "==> Exception : #{e.to_s} \n\n#{e.backtrace.join("\n").to_s}" 
       #specific to blindtest error reproting
       # Error.create(:user_id => 3, :backtrace => "#{e.to_s} \n\n Device : #{@current_device.inspect} \n\n #{e.backtrace.join("\n").to_s}", :type => e.class.to_s, :url => "IphonePush/send_group_notifications")
+      skip_device = @retry_from_device_id == @current_device.id ? true : false
       @retry_from_device_id = @current_device.id
+      @retry_from_device_id += 1 if skip_device
       bad_devices << @current_device.id
       retry
     end
