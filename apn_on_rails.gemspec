@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["markbates", "Rebecca Nesson"]
-  s.date = %q{2011-01-04}
+  s.date = %q{2011-08-26}
   s.description = %q{APN on Rails is a Ruby on Rails gem that allows you to
 easily add Apple Push Notification (iPhone) support to your Rails application.
 }
@@ -31,19 +31,6 @@ easily add Apple Push Notification (iPhone) support to your Rails application.
     "VERSION",
     "apn_on_rails.gemspec",
     "autotest/discover.rb",
-    "generators/apn_migrations_generator.rb",
-    "generators/templates/apn_migrations/001_create_apn_devices.rb",
-    "generators/templates/apn_migrations/002_create_apn_notifications.rb",
-    "generators/templates/apn_migrations/003_alter_apn_devices.rb",
-    "generators/templates/apn_migrations/004_create_apn_apps.rb",
-    "generators/templates/apn_migrations/005_create_groups.rb",
-    "generators/templates/apn_migrations/006_alter_apn_groups.rb",
-    "generators/templates/apn_migrations/007_create_device_groups.rb",
-    "generators/templates/apn_migrations/008_create_apn_group_notifications.rb",
-    "generators/templates/apn_migrations/009_create_pull_notifications.rb",
-    "generators/templates/apn_migrations/010_alter_apn_notifications.rb",
-    "generators/templates/apn_migrations/011_make_device_token_index_nonunique.rb",
-    "generators/templates/apn_migrations/012_add_launch_notification_to_apn_pull_notifications.rb",
     "lib/apn_on_rails.rb",
     "lib/apn_on_rails/apn_on_rails.rb",
     "lib/apn_on_rails/app/models/apn/app.rb",
@@ -59,6 +46,19 @@ easily add Apple Push Notification (iPhone) support to your Rails application.
     "lib/apn_on_rails/tasks/apn.rake",
     "lib/apn_on_rails/tasks/db.rake",
     "lib/apn_on_rails_tasks.rb",
+    "lib/generators/apn_migrations_generator.rb",
+    "lib/generators/templates/001_create_apn_devices.rb",
+    "lib/generators/templates/002_create_apn_notifications.rb",
+    "lib/generators/templates/003_alter_apn_devices.rb",
+    "lib/generators/templates/004_create_apn_apps.rb",
+    "lib/generators/templates/005_create_groups.rb",
+    "lib/generators/templates/006_alter_apn_groups.rb",
+    "lib/generators/templates/007_create_device_groups.rb",
+    "lib/generators/templates/008_create_apn_group_notifications.rb",
+    "lib/generators/templates/009_create_pull_notifications.rb",
+    "lib/generators/templates/010_alter_apn_notifications.rb",
+    "lib/generators/templates/011_make_device_token_index_nonunique.rb",
+    "lib/generators/templates/012_add_launch_notification_to_apn_pull_notifications.rb",
     "spec/active_record/setup_ar.rb",
     "spec/apn_on_rails/app/models/apn/app_spec.rb",
     "spec/apn_on_rails/app/models/apn/device_spec.rb",
@@ -111,7 +111,7 @@ easily add Apple Push Notification (iPhone) support to your Rails application.
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
       s.add_runtime_dependency(%q<configatron>, [">= 0"])
       s.add_development_dependency(%q<autotest>, [">= 0"])
-      s.add_development_dependency(%q<sqlite3-ruby>, [">= 0"])
+      s.add_development_dependency(%q<sqlite3-ruby>, ["= 1.3.3"])
       s.add_development_dependency(%q<rspec>, [">= 2.0.0"])
       s.add_development_dependency(%q<bundler>, ["~> 1.0.0"])
       s.add_development_dependency(%q<jeweler>, ["~> 1.5.0"])
@@ -121,7 +121,7 @@ easily add Apple Push Notification (iPhone) support to your Rails application.
     else
       s.add_dependency(%q<configatron>, [">= 0"])
       s.add_dependency(%q<autotest>, [">= 0"])
-      s.add_dependency(%q<sqlite3-ruby>, [">= 0"])
+      s.add_dependency(%q<sqlite3-ruby>, ["= 1.3.3"])
       s.add_dependency(%q<rspec>, [">= 2.0.0"])
       s.add_dependency(%q<bundler>, ["~> 1.0.0"])
       s.add_dependency(%q<jeweler>, ["~> 1.5.0"])
@@ -132,7 +132,7 @@ easily add Apple Push Notification (iPhone) support to your Rails application.
   else
     s.add_dependency(%q<configatron>, [">= 0"])
     s.add_dependency(%q<autotest>, [">= 0"])
-    s.add_dependency(%q<sqlite3-ruby>, [">= 0"])
+    s.add_dependency(%q<sqlite3-ruby>, ["= 1.3.3"])
     s.add_dependency(%q<rspec>, [">= 2.0.0"])
     s.add_dependency(%q<bundler>, ["~> 1.0.0"])
     s.add_dependency(%q<jeweler>, ["~> 1.5.0"])
