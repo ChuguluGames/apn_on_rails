@@ -23,6 +23,7 @@ module APN
         return if cert.nil?
         APN::Connection.open_for_feedback(options_for_feedback.merge({:cert => cert})) do |conn, sock|
           while line = conn.read(38)   # Read 38 bytes from the SSL socket
+            puts line
             feedback = line.unpack('N1n1H140')
             token = feedback[2].scan(/.{0,8}/).join(' ').            
             if device = APN::Device.find_by_token(token)
