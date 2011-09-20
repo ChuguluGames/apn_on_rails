@@ -170,26 +170,17 @@ class APN::App < APN::Base
   def self.process_devices
     apps = APN::App.all
     apps.each do |app|
-      puts apps.inspect
       app.process_devices
     end
-    # if !configatron.apn.cert.blank?
-    #   global_cert = File.read(configatron.apn.cert)
-    #   APN::App.process_devices_for_cert(global_cert)
-    # end
   end
 
   def self.process_devices_for_cert(the_cert)
-    puts "in APN::App.process_devices_for_cert"
-    puts APN::Feedback.devices(the_cert).inspect
 
     APN::Feedback.devices(the_cert).each do |device|
-      puts "Processing device #{device.id}"
+      puts "Processing device #{device.id}..."
       if device.last_registered_at < device.feedback_at
-        puts "device #{device.id} -> #{device.last_registered_at} < #{device.feedback_at}"
+        puts "    -> #{device.last_registered_at} < #{device.feedback_at} : Destroying !"
         device.destroy
-      else
-        puts "device #{device.id} -> #{device.last_registered_at} not < #{device.feedback_at}"
       end
     end
   end
