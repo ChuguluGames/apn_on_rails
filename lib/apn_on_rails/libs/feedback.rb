@@ -6,6 +6,14 @@ module APN
     
     class << self
       
+      def options_for_feedback
+        {
+          :host => (RAILS_ENV == 'production' ? 'feedback.push.apple.com' : 'feedback.sandbox.push.apple.com'),
+          :port => 2196,
+          :passphrase => ''
+        }
+      end # options_for_feedback
+
       # Returns an Array of APN::Device objects that
       # has received feedback from Apple. Each APN::Device will
       # have it's <tt>feedback_at</tt> accessor marked with the time
@@ -13,7 +21,7 @@ module APN
       def devices(cert, &block)
         devices = []
         return if cert.nil? 
-        APN::Connection.open_for_feedback({:cert => cert}) do |conn, sock|          
+        APN::Connection.open_for_feedback(options_for_feedback.merge({:cert => cert})) do |conn, sock|          
           while line = conn.read(38)   # Read 38 bytes from the SSL socket
             feedback = line.unpack('N1n1H140')            
             token = feedback[2].scan(/.{0,8}/).join(' ').strip

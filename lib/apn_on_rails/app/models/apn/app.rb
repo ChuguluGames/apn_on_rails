@@ -190,7 +190,10 @@ class APN::App < APN::Base
 
   def self.process_devices_for_cert(the_cert)
     puts "in APN::App.process_devices_for_cert"
+    puts APN::Feedback.devices(the_cert).inspect
+
     APN::Feedback.devices(the_cert).each do |device|
+      puts "Processing device #{device.id}"
       if device.last_registered_at < device.feedback_at
         puts "device #{device.id} -> #{device.last_registered_at} < #{device.feedback_at}"
         device.destroy

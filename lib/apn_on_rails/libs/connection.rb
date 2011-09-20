@@ -34,10 +34,6 @@ module APN
       #   configatron.apn.feedback.cert = File.join(rails_root, 'config', 'apple_push_notification_development.pem')) # Development
       #   configatron.apn.feedback.cert = File.join(rails_root, 'config', 'apple_push_notification_production.pem')) # Production
       def open_for_feedback(options = {}, &block)
-        options = {:cert => configatron.apn.feedback.cert,
-                   :passphrase => configatron.apn.feedback.passphrase,
-                   :host => configatron.apn.feedback.host,
-                   :port => configatron.apn.feedback.port}.merge(options)
         open(options, &block)
       end
 
