@@ -11,13 +11,8 @@ class APN::App < APN::Base
     (RAILS_ENV == 'production' ? apn_prod_cert : apn_dev_cert)
   end
   
-  # Opens a connection to the Apple APN server and attempts to batch deliver
-  # an Array of group notifications.
-  # 
-  # 
-  # As each APN::GroupNotification is sent the <tt>sent_at</tt> column will be timestamped,
-  # so as to not be sent again.
-  # 
+  # Opens a connection to the Apple APN server and attempts to batch deliver an Array of group notifications.
+  # As each APN::GroupNotification is sent the <tt>sent_at</tt> column will be timestamped, so as to not be sent again.
   def send_notifications
     if self.cert.nil?
       raise APN::Errors::MissingCertificateError.new
@@ -121,7 +116,7 @@ class APN::App < APN::Base
   
   #new send notification handles bad devices
   def send_gnoty(gnoty, connection, from_id = nil)
-    puts "#{gnoty.devices.size} device(s) to notify"
+    puts "#{gnoty.devices.count} device(s) to notify"
     nb_cur_device = 0  
     bad_devices = []  
     if from_id
@@ -142,8 +137,8 @@ class APN::App < APN::Base
       puts "Exception raised :"
       puts "==> Device : #{@current_device.id}"
       puts "==> Exception : #{e.to_s} \n\n#{e.backtrace.join("\n").to_s}" 
-      #specific to blindtest error reproting
-      # Error.create(:user_id => 3, :backtrace => "#{e.to_s} \n\n Device : #{@current_device.inspect} \n\n #{e.backtrace.join("\n").to_s}", :type => e.class.to_s, :url => "IphonePush/send_group_notifications")
+      # Specific to playboy error reproting
+      log 'ApplicationError', {name: e.class.to_s, user_id: user_id, backtrace: "#{e.to_s} \n\n Device : #{@current_device.inspect} \n\n #{e.backtrace.join("\n").to_s}", :url => "IphonePush/send_group_notifications"}
       skip_device = @retry_from_device_id == @current_device.id ? true : false
       @retry_from_device_id = @current_device.id
       @retry_from_device_id += 1 if skip_device
@@ -152,22 +147,17 @@ class APN::App < APN::Base
     end
     puts "==> Bad devices : " + bad_devices.inspect
 
-
     gnoty.sent_at = Time.now
     gnoty.save                                                                     
     puts "Notification sent to #{nb_cur_device}/#{gnoty.devices.size} device(s)"
   end
   
-  # Retrieves a list of APN::Device instnces from Apple using
-  # the <tt>devices</tt> method. It then checks to see if the
-  # <tt>last_registered_at</tt> date of each APN::Device is
-  # before the date that Apple says the device is no longer
-  # accepting notifications then the device is deleted. Otherwise
-  # it is assumed that the application has been re-installed
+  # Retrieves a list of APN::Device instnces from Apple using the <tt>devices</tt> method. It then checks to see if the
+  # <tt>last_registered_at</tt> date of each APN::Device is before the date that Apple says the device is no longer
+  # accepting notifications then the device is deleted. Otherwise it is assumed that the application has been re-installed
   # and is available for notifications.
   # 
-  # This can be run from the following Rake task:
-  #   $ rake apn:feedback:process
+  # This can be run from the following Rake task: $ rake apn:feedback:process
   def process_devices
     if self.cert.nil?
       raise APN::Errors::MissingCertificateError.new
@@ -198,8 +188,7 @@ class APN::App < APN::Base
       end
     end 
   end
-  
-  
+    
   protected
   def log_connection_exception(ex)
     puts ex.message
