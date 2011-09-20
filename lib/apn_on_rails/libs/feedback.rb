@@ -26,13 +26,14 @@ module APN
             puts line
             feedback = line.unpack('N1n1H140')
             token = feedback[2].scan(/.{0,8}/).join(' ').            
-            if device = APN::Device.find_by_token(token)
+            device = APN::Device.find_by_token(token)
+            if device
               device.feedback_at = Time.at(feedback[0])
               devices << device
             end
           end
         end
-        devices
+        return devices
       end # devices
 
       def process_devices
