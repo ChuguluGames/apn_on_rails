@@ -13,17 +13,22 @@ namespace :apn do
 
     desc "Deliver all unsent APN Group notifications."
     task :deliver, [:app_id, :group_notification_id, :from_device_id] => [:environment] do |t, args|
-      if args.group_notification_id and args.app_id
-        app = APN::App.find_by_id(args.app_id)
-        if app
-          gnoty = APN::GroupNotification.find_by_id(args.group_notification_id)
-          app.send_group_notification(gnoty, args.from_device_id)
-        else
-          puts "unknown app_id and/or missing group_id"
-        end
-      else   
-        APN::App.send_group_notifications
-      end  
+      begin
+        if args.group_notification_id and args.app_id
+          app = APN::App.find_by_id(args.app_id)
+          if app
+            gnoty = APN::GroupNotification.find_by_id(args.group_notification_id)
+            app.send_group_notification(gnoty, args.from_device_id)
+          else
+            puts "unknown app_id and/or missing group_id"
+          end
+        else   
+          APN::App.send_group_notifications
+        end  
+      rescue Exception => e
+        puts "Exception raised :"
+        puts "==> Exception : #{e.to_s} \n\n#{e.backtrace.join("\n").to_s}"
+      end
     end
 
   end # group_notifications

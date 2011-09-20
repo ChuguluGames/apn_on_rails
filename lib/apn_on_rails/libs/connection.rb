@@ -58,10 +58,14 @@ module APN
         ssl.sync = true
         ssl.connect
   
-        yield ssl, sock if block_given?
-  
-        ssl.close
-        sock.close
+        begin
+          yield ssl, sock if block_given?
+        rescue Exception => e
+          raise e
+        ensure
+          ssl.close
+          sock.close
+        end
       end
       
     end
