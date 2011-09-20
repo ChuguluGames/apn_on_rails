@@ -180,6 +180,7 @@ class APN::App < APN::Base
   def self.process_devices
     apps = APN::App.all
     apps.each do |app|
+      puts apps.inspect
       app.process_devices
     end
     # if !configatron.apn.cert.blank?
