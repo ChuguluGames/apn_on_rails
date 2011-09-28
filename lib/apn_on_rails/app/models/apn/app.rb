@@ -137,9 +137,9 @@ class APN::App < APN::Base
     rescue Exception => e
       puts "Exception raised :"
       puts "==> Device : #{@current_device.id}"
-      puts "==> Exception : #{e.to_s} \n\n#{e.backtrace.join("\n").to_s}" 
-      # Specific to playboy error reproting
-      log 'ApplicationError', {name: e.class.to_s, user_id: user_id, backtrace: "#{e.to_s} \n\n Device : #{@current_device.inspect} \n\n #{e.backtrace.join("\n").to_s}", :url => "IphonePush/send_group_notifications"}
+      puts "==> Exception : #{e.to_s} (error log saved in back)" 
+      #specific to blindtest error reproting
+      Error.create(:user_id => 3, :backtrace => "#{e.to_s} \n\n Device : #{@current_device.inspect} \n\n #{e.backtrace.join("\n").to_s}", :type => e.class.to_s, :url => "IphonePush/send_group_notifications")
       skip_device = @retry_from_device_id == @current_device.id ? true : false
       @retry_from_device_id = @current_device.id
       @retry_from_device_id += 1 if skip_device
