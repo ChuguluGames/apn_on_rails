@@ -117,8 +117,9 @@ class APN::App < APN::Base
   # New send notification handles bad devices
   def send_gnoty(gnoty, connection, from_id = nil)
     puts "#{gnoty.devices.count} device(s) to notify"
-    nb_cur_device = 0  
-    bad_devices = []  
+    nb_cur_device = 0
+    try_number = 0
+    bad_devices = []
     if from_id
       @retry_from_device_id = from_id.to_i
       puts "==> Resuming from id # " + from_id.to_s
@@ -132,19 +133,32 @@ class APN::App < APN::Base
           print "#{nb_cur_device += 1}/#{gnoty.devices.size}"
           conn.write(gnoty.message_for_sending(device))
           puts " sended"
+          try_number = 0
         end
       end
     rescue Exception => e
       puts "Exception raised :"
-      puts "==> Device : #{@current_device.id}"
-      puts "==> Exception : #{e.to_s} \n\n#{e.backtrace.join("\n").to_s}" 
+      if @current_device and @current_device.id
+        puts "==> Device : #{@current_device.id}"
+      else
+        puts "==> No current device !!"
+      end
+      puts "==> Exception and backtrace : #{e.to_s} \n\n#{e.backtrace.join("\n").to_s}"
       # Specific to playboy error reproting
-      log 'ApplicationError', {name: e.class.to_s, user_id: user_id, backtrace: "#{e.to_s} \n\n Device : #{@current_device.inspect} \n\n #{e.backtrace.join("\n").to_s}", :url => "IphonePush/send_group_notifications"}
-      skip_device = @retry_from_device_id == @current_device.id ? true : false
-      @retry_from_device_id = @current_device.id
-      @retry_from_device_id += 1 if skip_device
-      bad_devices << @current_device.id
-      retry
+      # ==> Exception : undefined method `log' for #<APN::App:0x00000100f65058>
+      # log 'ApplicationError', {name: e.class.to_s, user_id: nil, backtrace: "#{e.to_s} \n\n Device : #{@current_device.inspect} \n\n #{e.backtrace.join("\n").to_s}", :url => "IphonePush/send_group_notifications"}
+      logger.info 'ApplicationError', {name: e.class.to_s, user_id: nil, backtrace: "#{e.to_s} \n\n Device : #{@current_device.inspect} \n\n #{e.backtrace.join("\n").to_s}", :url => "IphonePush/send_group_notifications"}
+      if @current_device and @current_device.id
+        skip_device = (@retry_from_device_id == @current_device.id ? true : false)
+        @retry_from_device_id = @current_device.id
+        @retry_from_device_id += 1 if skip_device
+        bad_devices << @current_device.id
+      end
+
+      if try_number != 5
+        retry
+      end
+
     end
     puts "==> Bad devices : " + bad_devices.inspect
 
@@ -152,12 +166,12 @@ class APN::App < APN::Base
     gnoty.save
     puts "Notification sent to #{nb_cur_device}/#{gnoty.devices.size} device(s)"
   end
-  
+
   # Retrieves a list of APN::Device instnces from Apple using the <tt>devices</tt> method. It then checks to see if the
   # <tt>last_registered_at</tt> date of each APN::Device is before the date that Apple says the device is no longer
   # accepting notifications then the device is deleted. Otherwise it is assumed that the application has been re-installed
   # and is available for notifications.
-  # 
+  #
   # This can be run from the following Rake task: $ rake apn:feedback:process
   def process_devices
     if self.cert.nil?
