@@ -125,11 +125,17 @@ class APN::App < APN::Base
       puts "==> Resuming from id # " + from_id.to_s
     end
     begin
+      puts "===> Begin work"
       APN::Connection.open_for_delivery({:cert => self.cert}) do |conn, sock|
+        puts "===> Enter loop"
         devices = @retry_from_device_id.blank? ? gnoty.devices : gnoty.devices.collect{ |d| (d.id > @retry_from_device_id) ? d : nil}.uniq!
+        puts "===> Get devices \n #{devices.inspect}"
         devices.each do |device|
+          puts "===> Enter loop devices"
           next if device.blank?
+          puts "===> #{device.inspect} is not blank"
           @current_device = device
+          puts "===> @current_device setted"
           print "#{nb_cur_device += 1}/#{gnoty.devices.size}"
           conn.write(gnoty.message_for_sending(device))
           puts " sended"
