@@ -161,7 +161,7 @@ class APN::App < APN::Base
         bad_devices << @current_device.id
       end
 
-      if try_number != 5
+      if try_number != 3
         retry
       end
 
