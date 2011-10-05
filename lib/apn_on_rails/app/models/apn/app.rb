@@ -130,9 +130,9 @@ class APN::App < APN::Base
         devices.each do |device|
           next if device.blank?
           @current_device = device
-          print "#{nb_cur_device += 1}/#{gnoty.devices.size}"
+          puts "Sending #{device.inspect}"
           conn.write(gnoty.message_for_sending(device))
-          puts " sended"
+          puts "#{nb_cur_device += 1}/#{gnoty.devices.size} sended"
           try_number = 0
         end
       end
