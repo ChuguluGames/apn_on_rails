@@ -39,18 +39,26 @@ module APN
 
       private
       def open(options = {}, &block) # :nodoc:
+        puts "===> Connection::open ===> Begin"
         options = {:cert => configatron.apn.cert,
                    :passphrase => configatron.apn.passphrase,
                    :host => configatron.apn.host,
                    :port => configatron.apn.port}.merge(options)
+        puts "===> Connection::open ===> Options merged"
         ctx = OpenSSL::SSL::SSLContext.new
+        puts "===> Connection::open ===> Context initalized"
         ctx.key = OpenSSL::PKey::RSA.new(options[:cert], options[:passphrase])
+        puts "===> Connection::open ===> Key initalized"
         ctx.cert = OpenSSL::X509::Certificate.new(options[:cert])
+        puts "===> Connection::open ===> Certificat initalized"
 
         sock = TCPSocket.new(options[:host], options[:port])
+        puts "===> Connection::open ===> Socket initalized"
         ssl = OpenSSL::SSL::SSLSocket.new(sock, ctx)
+        puts "===> Connection::open ===> SSl initalized"
         ssl.sync = true
         ssl.connect
+        puts "===> Connection::open ===> Connected !"
 
         begin
           yield ssl, sock if block_given?
