@@ -139,8 +139,9 @@ class APN::App < APN::Base
           # puts "#{result[1].ord}"
           # puts "#{result[2..5]}"
           puts "Entering select"
-          if IO.select([conn], nil, nil, 5)
-            read_buffer = conn.read(6)
+          read_from = IO.select([conn, sock], nil, nil, 5)
+          if read_from
+            read_buffer = read_from.read(6)
             process_error_response(read_buffer)
           else
             puts "Timeout!"
