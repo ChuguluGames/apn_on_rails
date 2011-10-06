@@ -117,6 +117,7 @@ class APN::App < APN::Base
   # New send notification handles bad devices
   def send_gnoty(gnoty, connection, from_id = nil)
     puts "#{gnoty.devices.count} device(s) to notify"
+    puts "Building message using enhanced format specifications"
     nb_cur_device = 0
     try_number = 0
     bad_devices = []
