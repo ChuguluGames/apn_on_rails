@@ -140,7 +140,7 @@ class APN::App < APN::Base
             puts "read_from: #{read_from.inspect}"
             puts "read_from[0]: #{read_from[0].inspect}"
             puts "read_from[0][0]: #{read_from[0][0].inspect}"
-            read_buffer = read_from[0][0].read(6)
+            read_buffer = read_from[0][0].recvfrom(6)
             puts "READ BUFFER: #{read_buffer}"
             puts "READ BUFFER size: #{read_buffer.size}"
             if read_buffer.size > 2
