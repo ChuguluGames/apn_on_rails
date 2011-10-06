@@ -133,6 +133,7 @@ class APN::App < APN::Base
           @current_device = device
           puts "Sending #{device.inspect}"
           puts "device token size: #{device.to_hexa.size}"
+          puts "token: #{device.token}"
           conn.write(gnoty.message_for_sending(device))
           puts "Entering select"
           read_from = IO.select([conn], nil, nil, 2)
@@ -141,7 +142,7 @@ class APN::App < APN::Base
             puts "read_from: #{read_from.inspect}"
             puts "read_from[0]: #{read_from[0].inspect}"
             puts "read_from[0][0]: #{read_from[0][0].inspect}"
-            read_buffer = read_from[0][0].sysread(6)
+            read_buffer = read_from[0][0].sysread(6) #Will only read EOF if the request wasn't formatted properly
             puts "READ BUFFER: #{read_buffer}"
             puts "READ BUFFER size: #{read_buffer.size}"
             if read_buffer.size > 2
