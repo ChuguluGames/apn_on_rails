@@ -135,7 +135,7 @@ class APN::App < APN::Base
           conn.write(gnoty.message_for_sending(device))
           puts "#{conn.methods.sort}"
           puts "Closed? #{conn.closed?}"
-          result = conn.read_nonblock(6)
+          result = conn.read(6)
           puts "result: #{result.size}"
           puts "#{result[0].ord}"
           puts "#{result[1].ord}"
