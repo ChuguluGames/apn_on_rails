@@ -132,7 +132,7 @@ class APN::App < APN::Base
           next if device.blank?
           @current_device = device
           puts "Sending #{device.inspect}"
-          conn.write(gnoty.message_for_sending(device))s
+          conn.write(gnoty.message_for_sending(device))
           puts "Entering select"
           read_from = IO.select([conn, sock], nil, nil, 2)
           if read_from
