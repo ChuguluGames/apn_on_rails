@@ -99,7 +99,7 @@ class APN::App < APN::Base
     end
   end
 
-  # Modfiied method to restart sending from a specific device
+  # Modified method to restart sending from a specific device
   def send_group_notification(gnoty, from_device_id = nil)
     return if !self.test_cert!
     unless gnoty.nil?
