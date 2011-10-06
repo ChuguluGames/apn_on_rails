@@ -142,9 +142,11 @@ class APN::App < APN::Base
             puts "read_from[0][0]: #{read_from[0][0].inspect}"
             read_buffer = read_from[0][0].read(6)
             puts "READ BUFFER: #{read_buffer}"
-            puts "READ BUFFER size: #{read_buffer}.size"
-            # puts "CMD: #{read_buffer[0].ord}"
-            # puts "ERR: #{read_buffer[1].ord}"
+            puts "READ BUFFER size: #{read_buffer.size}"
+            if read_buffer.size > 2
+              puts "CMD: #{read_buffer[0].ord}"
+              puts "ERR: #{read_buffer[1].ord}"
+            end
             # puts "DEV: #{read_buffer[2..5]}"
           else
             puts "Timeout!"
