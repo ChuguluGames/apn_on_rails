@@ -132,16 +132,17 @@ class APN::App < APN::Base
           next if device.blank?
           @current_device = device
           puts "Sending #{device.inspect}"
-          conn.write(gnoty.message_for_sending(device))
+          conn.write(gnoty.message_for_sending(device))s
           puts "Entering select"
           read_from = IO.select([conn, sock], nil, nil, 2)
           if read_from
             puts "Device #{device.inspect} did a bad bad thing..."
             puts "read_from: #{read_from.inspect}"
             read_buffer = read_from[0][0].read(6)
-            puts "CMD: #{read_buffer[0].ord}"
-            puts "ERR: #{read_buffer[1].ord}"
-            puts "DEV: #{read_buffer[2..5]}"
+            puts "RD BUFF: #{read_buffer}"
+            # puts "CMD: #{read_buffer[0].ord}"
+            # puts "ERR: #{read_buffer[1].ord}"
+            # puts "DEV: #{read_buffer[2..5]}"
           else
             puts "Timeout!"
           end
