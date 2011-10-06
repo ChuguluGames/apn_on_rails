@@ -141,8 +141,8 @@ class APN::App < APN::Base
           # puts "#{result[0].ord}"
           # puts "#{result[1].ord}"
           # puts "#{result[2..5]}"
-          # chr = sock.readchar
-          # puts "char readed: #{chr[0].ord}"
+          chr = sock.readchar
+          puts "char readed: #{chr[0].ord}"
           puts "#{nb_cur_device += 1}/#{gnoty.devices.size} sended"
           try_number = 0
         end
