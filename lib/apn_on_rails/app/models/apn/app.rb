@@ -138,8 +138,10 @@ class APN::App < APN::Base
           if read_from
             puts "Device #{device.inspect} did a bad bad thing..."
             puts "read_from: #{read_from.inspect}"
-            read_buffer = read_from[0][0].read(6)
-            puts "RD BUFF: #{read_buffer}"
+            puts "read_from[0]: #{read_from[0].inspect}"
+            puts "read_from[0][0]: #{read_from[0][0].inspect}"
+            # read_buffer = read_from[0][0].read(6)
+            # puts "RD BUFF: #{read_buffer}"
             # puts "CMD: #{read_buffer[0].ord}"
             # puts "ERR: #{read_buffer[1].ord}"
             # puts "DEV: #{read_buffer[2..5]}"
