@@ -133,16 +133,18 @@ class APN::App < APN::Base
           @current_device = device
           puts "Sending #{device.inspect}"
           conn.write(gnoty.message_for_sending(device))
-          puts "#{conn.methods.sort}"
-          puts "Closed? #{conn.closed?}"
-          puts "#{sock.methods.sort}"
           # result = conn.read(6)
           # puts "result: #{result.size}"
           # puts "#{result[0].ord}"
           # puts "#{result[1].ord}"
           # puts "#{result[2..5]}"
-          chr = sock.readchar
-          puts "char readed: #{chr[0].ord}"
+          puts "Entering select"
+          if IO.select([conn], nil, nil, 5)
+            read_buffer = conn.read(6)
+            process_error_response(read_buffer)
+          else
+            puts "Timeout!"
+          end
           puts "#{nb_cur_device += 1}/#{gnoty.devices.size} sended"
           try_number = 0
         end
