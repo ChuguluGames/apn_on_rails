@@ -133,16 +133,17 @@ class APN::App < APN::Base
           @current_device = device
           puts "Sending #{device.inspect}"
           conn.write(gnoty.message_for_sending(device))
-          result = conn.read_nonblock(8)
-          puts "result: #{result.size}"
-          puts "#{result[0].ord}"
-          puts "#{result[1].ord}"
-          puts "#{result[2..5]}"
+          # result = conn.read_nonblock(8)
+          # puts "result: #{result.size}"
+          # puts "#{result[0].ord}"
+          # puts "#{result[1].ord}"
+          # puts "#{result[2..5]}"
           puts "#{nb_cur_device += 1}/#{gnoty.devices.size} sended"
           try_number = 0
         end
       end
     rescue Exception => e
+      try_number += 1
       puts "Exception raised :"
       if @current_device and @current_device.id
         puts "==> Device : #{@current_device.id}"
