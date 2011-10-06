@@ -129,11 +129,15 @@ class APN::App < APN::Base
       APN::Connection.open_for_delivery({:cert => self.cert}) do |conn, sock|
         devices = @retry_from_device_id.blank? ? gnoty.devices : gnoty.devices.collect{ |d| (d.id > @retry_from_device_id) ? d : nil}.uniq!
         devices.each do |device|
-          next if device.blank? or device.token.delete(' ').index('00') % 2 == 0
+          next if device.blank?
           @current_device = device
-          device.token.
-          br = conn.write(gnoty.message_for_sending(device))
-          puts "Bytes written: #{br}"
+          death_index = device.token.delete(' ').index('00')
+          if death_index and death_index % 2 == 0
+            puts "Skipping device with a token containing 00"
+          else
+            br = conn.write(gnoty.message_for_sending(device))
+            puts "Bytes written: #{br}"
+          end
           # read_from = IO.select([conn], nil, nil, 2)
           # if read_from
           #   puts "Device #{device.inspect} did a bad bad thing..."
