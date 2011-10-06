@@ -134,22 +134,21 @@ class APN::App < APN::Base
           puts "Sending #{device.inspect}"
           puts "device token size: #{device.to_hexa.size}"
           puts "token: #{device.token}"
-          conn.write(gnoty.message_for_sending(device))
+          br = conn.write(gnoty.message_for_sending(device))
+          puts "Bytes written: #{br}"
           puts "Entering select"
           read_from = IO.select([conn], nil, nil, 2)
           if read_from
             puts "Device #{device.inspect} did a bad bad thing..."
-            puts "read_from: #{read_from.inspect}"
-            puts "read_from[0]: #{read_from[0].inspect}"
-            puts "read_from[0][0]: #{read_from[0][0].inspect}"
-            read_buffer = read_from[0][0].sysread(6) #Will only read EOF if the request wasn't formatted properly
+            read_buffer = read_from[0][0].sysread(6) 
+            # Will only read EOF if the request wasn't formatted properly
             puts "READ BUFFER: #{read_buffer}"
             puts "READ BUFFER size: #{read_buffer.size}"
             if read_buffer.size > 2
               puts "CMD: #{read_buffer[0].ord}"
               puts "ERR: #{read_buffer[1].ord}"
-            end
             # puts "DEV: #{read_buffer[2..5]}"
+            end
           else
             puts "Timeout!"
           end
