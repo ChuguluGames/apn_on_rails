@@ -133,7 +133,7 @@ class APN::App < APN::Base
           @current_device = device
           puts "Sending #{device.inspect}"
           conn.write(gnoty.message_for_sending(device))
-          puts "conn.methods.sort"
+          puts "#{conn.methods.sort}"
           puts "#{nb_cur_device += 1}/#{gnoty.devices.size} sended"
           try_number = 0
         end
