@@ -134,13 +134,13 @@ class APN::App < APN::Base
           puts "Sending #{device.inspect}"
           conn.write(gnoty.message_for_sending(device))
           puts "Entering select"
-          read_from = IO.select([conn, sock], nil, nil, 2)
+          read_from = IO.select([conn], nil, nil, 2)
           if read_from
             puts "Device #{device.inspect} did a bad bad thing..."
             puts "read_from: #{read_from.inspect}"
             puts "read_from[0]: #{read_from[0].inspect}"
             puts "read_from[0][0]: #{read_from[0][0].inspect}"
-            # read_buffer = read_from[0][0].read(6)
+            read_buffer = read_from[0][0].read(6)
             # puts "RD BUFF: #{read_buffer}"
             # puts "CMD: #{read_buffer[0].ord}"
             # puts "ERR: #{read_buffer[1].ord}"
