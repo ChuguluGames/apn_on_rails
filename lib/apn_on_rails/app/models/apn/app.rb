@@ -129,29 +129,26 @@ class APN::App < APN::Base
       APN::Connection.open_for_delivery({:cert => self.cert}) do |conn, sock|
         devices = @retry_from_device_id.blank? ? gnoty.devices : gnoty.devices.collect{ |d| (d.id > @retry_from_device_id) ? d : nil}.uniq!
         devices.each do |device|
-          next if device.blank?
+          next if device.blank? or device.token.delete(' ').index('00') % 2 == 0
           @current_device = device
-          puts "Sending #{device.inspect}"
-          puts "device token size: #{device.to_hexa.size}"
-          puts "token: #{device.token}"
+          device.token.
           br = conn.write(gnoty.message_for_sending(device))
           puts "Bytes written: #{br}"
-          puts "Entering select"
-          read_from = IO.select([conn], nil, nil, 2)
-          if read_from
-            puts "Device #{device.inspect} did a bad bad thing..."
-            read_buffer = read_from[0][0].sysread(6) 
-            # Will only read EOF if the request wasn't formatted properly
-            puts "READ BUFFER: #{read_buffer}"
-            puts "READ BUFFER size: #{read_buffer.size}"
-            if read_buffer.size > 2
-              puts "CMD: #{read_buffer[0].ord}"
-              puts "ERR: #{read_buffer[1].ord}"
-            # puts "DEV: #{read_buffer[2..5]}"
-            end
-          else
-            puts "Timeout!"
-          end
+          # read_from = IO.select([conn], nil, nil, 2)
+          # if read_from
+          #   puts "Device #{device.inspect} did a bad bad thing..."
+          #   read_buffer = read_from[0][0].sysread(6) 
+          #   # Will only read EOF if the request wasn't formatted properly
+          #   puts "READ BUFFER: #{read_buffer}"
+          #   puts "READ BUFFER size: #{read_buffer.size}"
+          #   if read_buffer.size > 2
+          #     puts "CMD: #{read_buffer[0].ord}"
+          #     puts "ERR: #{read_buffer[1].ord}"
+          #   # puts "DEV: #{read_buffer[2..5]}"
+          #   end
+          # else
+          #   puts "Timeout!"
+          # end
           puts "#{nb_cur_device += 1}/#{gnoty.devices.size} sended"
           try_number = 0
         end
