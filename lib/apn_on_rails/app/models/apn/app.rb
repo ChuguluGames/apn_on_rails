@@ -136,6 +136,8 @@ class APN::App < APN::Base
           puts "Entering select"
           read_from = IO.select([conn, sock], nil, nil, 2)
           if read_from
+            puts "Device #{device.inspect} did a bad bad thing..."
+            puts "read_from: #{read_from.inspect}"
             read_buffer = read_from.read(6)
             puts "CMD: #{read_buffer[0].ord}"
             puts "ERR: #{read_buffer[1].ord}"
