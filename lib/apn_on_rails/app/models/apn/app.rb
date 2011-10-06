@@ -133,7 +133,7 @@ class APN::App < APN::Base
           @current_device = device
           puts "Sending #{device.inspect}"
           conn.write(gnoty.message_for_sending(device))
-          result = conn.read(8)
+          result = conn.read_nonblock(8)
           puts "result: #{result.size}"
           puts "#{result[0].ord}"
           puts "#{result[1].ord}"
