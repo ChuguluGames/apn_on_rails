@@ -132,6 +132,7 @@ class APN::App < APN::Base
           next if device.blank?
           @current_device = device
           puts "Sending #{device.inspect}"
+          puts "device token size: #{device.to_hexa.size}"
           conn.write(gnoty.message_for_sending(device))
           puts "Entering select"
           read_from = IO.select([conn], nil, nil, 2)
