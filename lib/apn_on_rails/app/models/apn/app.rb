@@ -132,6 +132,9 @@ class APN::App < APN::Base
           next if device.blank?
           @current_device = device
           death_index = device.token.delete(' ').index('00')
+
+          puts device.token.inspect
+
           if death_index and death_index % 2 == 0
             puts "Skipping device with a token containing 00"
           else
