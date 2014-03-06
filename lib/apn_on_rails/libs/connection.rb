@@ -1,3 +1,4 @@
+# encoding: utf-8
 module APN
   module Connection
     
@@ -59,7 +60,7 @@ module APN
         ssl.connect
   
         yield ssl, sock if block_given?
-  
+      ensure
         ssl.close
         sock.close
       end

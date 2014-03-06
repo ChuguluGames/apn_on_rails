@@ -1,3 +1,4 @@
+# encoding: utf-8
 class APN::App < APN::Base
 
   has_many :groups, :class_name => 'APN::Group', :dependent => :destroy
@@ -8,7 +9,7 @@ class APN::App < APN::Base
   has_many :unsent_group_notifications, :through => :groups
 
   def cert
-    (RAILS_ENV == 'production' ? apn_prod_cert : apn_dev_cert)
+    (::Rails.env.production? ? apn_prod_cert : apn_dev_cert)
   end
 
   # Opens a connection to the Apple APN server and attempts to batch deliver
@@ -54,9 +55,8 @@ class APN::App < APN::Base
             end
           end
         end
-      rescue Exception => e
-        log_connection_exception(e)
       end
+    end
     # end
   end
 
@@ -66,14 +66,24 @@ class APN::App < APN::Base
       return
     end
     unless self.unsent_group_notifications.nil? || self.unsent_group_notifications.empty?
-      APN::Connection.open_for_delivery({:cert => self.cert}) do |conn, sock|
-        unsent_group_notifications.each do |gnoty|
-          gnoty.devices.find_each do |device|
-            conn.write(gnoty.message_for_sending(device))
+      unsent_group_notifications.each do |gnoty|
+        failed = 0
+        devices_to_send = gnoty.devices.count
+        gnoty.devices.find_in_batches(:batch_size => 100) do |devices|
+          APN::Connection.open_for_delivery({:cert => self.cert}) do |conn, sock|
+            devices.each do |device|
+              begin
+                conn.write(gnoty.message_for_sending(device))
+              rescue Exception => e
+                puts e.message
+                failed += 1
+              end
+            end
           end
-          gnoty.sent_at = Time.now
-          gnoty.save
         end
+        puts "Sent to: #{devices_to_send - failed}/#{devices_to_send} "
+        gnoty.sent_at = Time.now
+        gnoty.save
       end
     end
   end
