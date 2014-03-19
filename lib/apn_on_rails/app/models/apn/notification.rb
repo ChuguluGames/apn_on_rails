@@ -82,7 +82,7 @@ class APN::Notification < APN::Base
     json = self.to_apple_json.gsub(/\\u([0-9a-z]{4})/) {|s| [$1.to_i(16)].pack("U")} # This will create non encoded string. Otherwise the string is encoded from utf8 to ascii with unicode representation (i.e. \\u05d2)
     device_token = [self.device.token.gsub(/[<\s>]/, '')].pack('H*')
     message = [0, 0, 32, device_token, 0, json.bytes.count, json].pack('ccca*cca*')
-    raise APN::Errors::ExceededMessageSizeError.new(message) if message.size.to_i > 256
+    raise APN::Errors::ExceededMessageSizeError.new(message) if json.bytes.count > 256
     message
   end
 
