@@ -1,3 +1,4 @@
+# encoding: utf-8
 # Represents the message you wish to send.
 # An APN::Notification belongs to an APN::Device.
 #
@@ -79,10 +80,9 @@ class APN::Notification < APN::Base
 
   # Creates the binary message needed to send to Apple.
   def message_for_sending
-    json = self.to_apple_json.gsub(/\\u([0-9a-z]{4})/) {|s| [$1.to_i(16)].pack("U")} # This will create non encoded string. Otherwise the string is encoded from utf8 to ascii with unicode representation (i.e. \\u05d2)
-    device_token = [self.device.token.gsub(/[<\s>]/, '')].pack('H64') # 32 hex bytes
-    message = [0, 32, device_token, json.bytes.count, json].pack('Cna32na*') # CMD(uint8), token len(uint16), token(bin), payload len(uint16), payload(bin)
-    raise APN::Errors::ExceededMessageSizeError.new(message) if json.bytes.count > 256
+    json = self.to_apple_json.gsub(/\\u([0-9a-f]{4})/) {|s| [$1.to_i(16)].pack("U")} # This will create non encoded string. Otherwise the string is encoded from utf8 to ascii with unicode representation (i.e. \\u05d2)
+    message = [0, 32, self.device.token.gsub(/[<\s>]/, ''), json.bytesize, json].pack("CnH64na#{json.bytesize}") # CMD(uint8), token len(uint16), token(32 byte bin), payload len(uint16), payload(bin)
+    raise APN::Errors::ExceededMessageSizeError.new(message) if json.bytesize > 256
     message
   end
 
