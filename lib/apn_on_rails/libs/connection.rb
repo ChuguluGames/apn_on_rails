@@ -62,9 +62,9 @@ module APN
         ctx.key  = OpenSSL::PKey::RSA.new(cert, options[:passphrase])
         ctx.cert = OpenSSL::X509::Certificate.new(cert)
 
-        @@sock = TCPSocket.new(options[:host], options[:port])
-        @@ssl  = OpenSSL::SSL::SSLSocket.new(@@sock, ctx)
-        # ssl.sync = true
+        @@sock     = TCPSocket.new(options[:host], options[:port])
+        @@ssl      = OpenSSL::SSL::SSLSocket.new(@@sock, ctx)
+        @@ssl.sync = true
         @@ssl.connect
 
         @@ssl
