@@ -40,24 +40,71 @@ class APN::App < APN::Base
 
   def self.send_notifications_for_cert(the_cert, app_id)
     # unless self.unsent_notifications.nil? || self.unsent_notifications.empty?
-      if (app_id == nil)
-        conditions = "app_id is null"
-      else
-        conditions = ["app_id = ?", app_id]
-      end
-      begin
-        APN::Connection.open_for_delivery({:cert => the_cert}) do |conn, sock|
-          APN::Device.find_each(:conditions => conditions) do |dev|
-            dev.unsent_notifications.each do |noty|
-              conn.write(noty.message_for_sending)
-              noty.sent_at = Time.now
-              noty.save
+    if (app_id == nil)
+      conditions = "app_id is null"
+    else
+      conditions = ["app_id = ?", app_id]
+    end
+    last_device_id = 0
+    last_noty_id   = 0
+    catch :done do
+      while true do
+        catch :retry do
+          conn = APN::Connection.open_for_delivery({cert: the_cert})
+          APN::Device.where('id >= ? AND app_id = ?', last_device_id, app_id).order(:id).each do |device|
+            last_device_id = device.id
+            buffer = String.new
+            bin = APN::BinaryNotification.new
+            bin.device_token = device.token
+            notification_ids = []
+            device.unsent_notifications.where('id > ?', last_noty_id).order(:id).each do |noty|
+              notification_ids << noty.id
+              bin.payload         = noty.to_apple_json
+              bin.identifier      = noty.id
+              bin.expiration_date = 1.hour.from_now
+              bin.priority        = APN::BinaryNotification::PRIORITY_HIGH
+              buffer << bin.data
             end
-          end
+            conn.write(buffer)
+            # if we get a response from APNS the current connection is toast
+            # so we have to [skip bad devices/notifications if needed and ]reconnect/resume sending
+            rconns, = IO.select([conn], nil, nil, 0.1)
+            if rconns and rconns[0].is_a?(conn.class)
+              result   = rconns[0].read(APN::APNSResponse::RESPONSE_LENGTH)
+              response = APN::APNSResponse.new(result)
+              case response.status
+              when APN::APNSResponse::STATUS_INVALID_TOKEN_SIZE, APN::APNSResponse::STATUS_INVALID_TOKEN, APN::APNSResponse::STATUS_MISSING_DEVICE_TOKEN
+                # shitty device, skip (delete from db?)
+                last_device_id = last_device_id + 1
+                last_noty_id   = 0
+              when APN::APNSResponse::STATUS_INVALID_PAYLOAD_SIZE, APN::APNSResponse::STATUS_MISSING_PAYLOAD
+                # shitty notif, skip (delete from db?)
+                # get next valid noty id (if there are gaps in IDs, to avoid infinite loops we can't just do id + 1)
+                if (valid_index = notification_ids.index(response.notification_identifier)).nil?
+                  # whooops... not sure what to do here...
+                elsif notification_ids.size - valid_index > 1 # if not last noty
+                  last_noty_id = notification_ids[valid_index + 1]
+                else # that was the last noty for this device, skip device
+                  last_device_id = last_device_id + 1
+                  last_noty_id   = 0
+                end
+              else # resume from last successful noty
+                last_noty_id = response.notification_identifier
+              end
+              # cleanup connections before retrying
+              APN::Connection.close
+              throw :retry
+            else # no response from APNS for current device => tits! we can flag sent notifications and move on
+              last_noty_id = 0
+              device.unsent_notifications.update_all({sent_at: Time.now})
+            end
+          end # all done
+          throw :done
         end
       end
     end
-    # end
+    ensure
+      APN::Connection.close
   end
 
   def send_group_notifications
