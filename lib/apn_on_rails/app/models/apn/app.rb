@@ -69,7 +69,7 @@ class APN::App < APN::Base
             conn.write(buffer)
             # if we get a response from APNS the current connection is toast
             # so we have to [skip bad devices/notifications if needed and ]reconnect/resume sending
-            rconns, = IO.select([conn], nil, nil, 0.2)
+            rconns, = IO.select([conn], nil, nil, 1)
             if rconns and rconns[0].is_a?(conn.class)
               result   = rconns[0].read(APN::APNSResponse::RESPONSE_LENGTH)
               response = APN::APNSResponse.new(result)
